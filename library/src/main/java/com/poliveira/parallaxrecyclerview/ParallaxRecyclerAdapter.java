@@ -12,13 +12,18 @@ import android.widget.RelativeLayout;
 
 import java.util.List;
 
+/**
+ * Support multiple viewType
+ *
+ * @param <T>
+ */
 public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private float mScrollMultiplier = 0.5f;
 
     public static class VIEW_TYPES {
-        public static final int NORMAL = 1;
-        public static final int HEADER = 2;
-        public static final int FIRST_VIEW = 3;
+        public static final int NORMAL = 100;
+        public static final int HEADER = 101;
+        public static final int FIRST_VIEW = 102;
     }
 
     public abstract void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<T> adapter, int i);
@@ -51,6 +56,12 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
     private RecyclerView mRecyclerView;
     private boolean mShouldClipView = true;
 
+
+    public ParallaxRecyclerAdapter() {
+
+    }
+
+
     /**
      * Translates the adapter in Y
      *
@@ -72,7 +83,7 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
             float left;
             if (holder != null) {
                 left = Math.min(1, ((ofCalculated) / (mHeader.getHeight() * mScrollMultiplier)));
-            }else {
+            } else {
                 left = 1;
             }
             mParallaxScroll.onParallaxScroll(left, of, mHeader);
@@ -107,6 +118,7 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, final int i) {
         if (mHeader != null) {
             if (i == 0) {
+                onBindViewHolderImpl(viewHolder, this, i);
                 return;
             }
             onBindViewHolderImpl(viewHolder, this, i - 1);
@@ -115,10 +127,13 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
         }
     }
 
+    public abstract RecyclerView.ViewHolder onCreateViewHolderHeader(CustomRelativeWrapper viewGroup);
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, final int i) {
         if (i == VIEW_TYPES.HEADER && mHeader != null) {
-            return new ViewHolder(mHeader);
+            //return new ViewHolder(mHeader);
+            return onCreateViewHolderHeader(mHeader);
         }
         if (i == VIEW_TYPES.FIRST_VIEW && mHeader != null && mRecyclerView != null) {
             final RecyclerView.ViewHolder holder = mRecyclerView.findViewHolderForAdapterPosition(0);
@@ -180,41 +195,38 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
         notifyDataSetChanged();
     }
 
-    public void addItem(T item, int position) {
-        mData.add(position, item);
-        notifyItemInserted(position + (mHeader == null ? 0 : 1));
-    }
-
-    public void removeItem(T item) {
-        int position = mData.indexOf(item);
-        if (position < 0)
-            return;
-        mData.remove(item);
-        notifyItemRemoved(position + (mHeader == null ? 0 : 1));
-    }
-
 
     public int getItemCount() {
         return getItemCountImpl(this) + (mHeader == null ? 0 : 1);
     }
 
+
+    public abstract int getItemViewTypeImp(int position);
+
     @Override
     public int getItemViewType(int position) {
-        if (position == 1)
-            return VIEW_TYPES.FIRST_VIEW;
-        return position == 0 && mHeader != null ? VIEW_TYPES.HEADER : VIEW_TYPES.NORMAL;
+        //if (position == 1)
+        //    return VIEW_TYPES.FIRST_VIEW;
+        if (position == 0 && mHeader != null) {
+            return VIEW_TYPES.HEADER;
+        }
+        return getItemViewTypeImp(position - 1);
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         public ViewHolder(View itemView) {
             super(itemView);
         }
     }
 
-    static class CustomRelativeWrapper extends RelativeLayout {
+    public static class CustomRelativeWrapper extends RelativeLayout {
 
         private int mOffset;
         private boolean mShouldClip;
+
+        public CustomRelativeWrapper(Context context) {
+            super(context);
+        }
 
         public CustomRelativeWrapper(Context context, boolean shouldClick) {
             super(context);
@@ -234,6 +246,7 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
             invalidate();
         }
     }
+
     /**
      * Set parallax scroll multiplier.
      *
@@ -245,7 +258,6 @@ public abstract class ParallaxRecyclerAdapter<T> extends RecyclerView.Adapter<Re
 
     /**
      * Get the current parallax scroll multiplier.
-     *
      */
     public float getScrollMultiplier() {
         return this.mScrollMultiplier;

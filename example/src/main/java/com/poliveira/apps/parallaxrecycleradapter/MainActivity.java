@@ -57,17 +57,30 @@ public class MainActivity extends Activity {
         final ParallaxRecyclerAdapter<String> adapter = new ParallaxRecyclerAdapter<String>(content) {
             @Override
             public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<String> adapter, int i) {
-                ((ViewHolder) viewHolder).textView.setText(adapter.getData().get(i));
+                if (viewHolder instanceof ItemViewHolder)
+                    ((ItemViewHolder) viewHolder).textView.setText(adapter.getData().get(i));
             }
 
             @Override
             public RecyclerView.ViewHolder onCreateViewHolderImpl(ViewGroup viewGroup, final ParallaxRecyclerAdapter<String> adapter, int i) {
-                return new ViewHolder(getLayoutInflater().inflate(R.layout.row_recyclerview_cards, viewGroup, false));
+                return new ItemViewHolder(getLayoutInflater().inflate(R.layout.row_recyclerview_cards, viewGroup, false));
             }
 
             @Override
             public int getItemCountImpl(ParallaxRecyclerAdapter<String> adapter) {
                 return content.size();
+            }
+
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolderHeader(CustomRelativeWrapper viewGroup) {
+                //custom your headHolderView
+                return new ViewHolder(viewGroup);
+            }
+
+            @Override
+            public int getItemViewTypeImp(int position) {
+                //define your viewType
+                return 0;
             }
         };
 
@@ -97,17 +110,30 @@ public class MainActivity extends Activity {
         final ParallaxRecyclerAdapter<String> adapter = new ParallaxRecyclerAdapter<String>(content) {
             @Override
             public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<String> adapter, int i) {
-                ((ViewHolder) viewHolder).textView.setText(adapter.getData().get(i));
+                if (viewHolder instanceof ItemViewHolder)
+                    ((ItemViewHolder) viewHolder).textView.setText(adapter.getData().get(i));
             }
 
             @Override
             public RecyclerView.ViewHolder onCreateViewHolderImpl(ViewGroup viewGroup, final ParallaxRecyclerAdapter<String> adapter, int i) {
-                return new ViewHolder(getLayoutInflater().inflate(R.layout.row_recyclerview, viewGroup, false));
+                return new ItemViewHolder(getLayoutInflater().inflate(R.layout.row_recyclerview, viewGroup, false));
             }
 
             @Override
             public int getItemCountImpl(ParallaxRecyclerAdapter<String> adapter) {
                 return content.size();
+            }
+
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolderHeader(CustomRelativeWrapper viewGroup) {
+                //custom your headHolderView
+                return new ViewHolder(viewGroup);
+            }
+
+            @Override
+            public int getItemViewTypeImp(int position) {
+                //define your viewType
+                return 0;
             }
         };
 
@@ -126,10 +152,10 @@ public class MainActivity extends Activity {
     }
 
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ItemViewHolder extends RecyclerView.ViewHolder {
         public TextView textView;
 
-        public ViewHolder(View itemView) {
+        public ItemViewHolder(View itemView) {
             super(itemView);
             textView = (TextView) itemView.findViewById(R.id.textView);
         }
