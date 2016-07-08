@@ -1,6 +1,9 @@
 android-parallax-recycleview
 ============================
 
+![Multiple ViewType Sample GIF](http://img.blog.csdn.net/20160708161853108)
+
+
 **Integration**
 ====
 
